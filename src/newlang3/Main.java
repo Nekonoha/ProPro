@@ -9,6 +9,7 @@ public class Main {
             try {
                 lexicalUnit = lexicalAnalyzer.get();
                 if (lexicalUnit != null) {
+                    System.out.println(lexicalUnit);
                     if (lexicalUnit.getType() == LexicalType.EOF) break;
                 }
             } catch (Exception e) {
