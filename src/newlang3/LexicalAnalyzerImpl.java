@@ -1,5 +1,7 @@
 package newlang3;
 
+import sun.security.krb5.internal.PAData;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
@@ -40,52 +42,93 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
     @Override
     public LexicalUnit get() throws Exception {
         //ほしいパターン
-        Map<LexicalType, Pattern> map = new LinkedHashMap<>();
+        Map<LexicalType, Pattern> sym_map = new LinkedHashMap<>();
+        Map<LexicalType, String> str_map = new LinkedHashMap<>();
+        Map<LexicalType, Pattern> num_map = new LinkedHashMap<>();
+        Map<String, Pattern> map_block = new LinkedHashMap<>();
+
+        //文字列、数値、記号かどうかでまず塊を切り出す
+        map_block.put("NUM",Pattern.compile("^(([0-9]+(\\.[0-9]+)?))"));
+        map_block.put("STR_NUM", Pattern.compile("^([a-zA-Z]+([a-zA-z0-9]*))"));
+        map_block.put("SYMBOL", Pattern.compile("^(\"(.*)\"|[=+\\-/*<>]+)"));
 
         //予約語
-        map.put(LexicalType.NL, Pattern.compile("^(\r\n+)"));
-        map.put(LexicalType.EOF, Pattern.compile("^(EOF)"));
-        map.put(LexicalType.DIM, Pattern.compile("^(DIM)"));
-        map.put(LexicalType.FOR, Pattern.compile("^(FOR)"));
-        map.put(LexicalType.TO, Pattern.compile("^(TO)"));
-        map.put(LexicalType.NEXT, Pattern.compile("^(NEXT)"));
-        map.put(LexicalType.ELSEIF, Pattern.compile("^(ELSEIF)"));
-        map.put(LexicalType.IF, Pattern.compile("^(IF)"));
-        map.put(LexicalType.ELSE, Pattern.compile("^(ELSE)"));
-        map.put(LexicalType.THEN, Pattern.compile("^(THEN)"));
+        str_map.put(LexicalType.EOF, "EOF");
+        str_map.put(LexicalType.DIM,"DIM");
+        str_map.put(LexicalType.FOR, "FOR");
+        str_map.put(LexicalType.TO, "TO");
+        str_map.put(LexicalType.NEXT, "NEXT");
+        str_map.put(LexicalType.ELSEIF, "ELSEIF");
+        str_map.put(LexicalType.IF, "IF");
+        str_map.put(LexicalType.ELSE, "ELSE");
+        str_map.put(LexicalType.THEN, "THEN");
 
 
         //num
-        map.put(LexicalType.DOUBLEVAL, Pattern.compile("^(([0-9]+(\\.[0-9]+)))"));
-        map.put(LexicalType.INTVAL, Pattern.compile("^(([0-9]+))"));
+        num_map.put(LexicalType.DOUBLEVAL, Pattern.compile("^(([0-9]+(\\.[0-9]+)))"));
+        num_map.put(LexicalType.INTVAL, Pattern.compile("^(([0-9]+))"));
 
         //Symbol
-        map.put(LexicalType.LE, Pattern.compile("^(<=)|(=<)"));
-        map.put(LexicalType.GE, Pattern.compile("^(>=)|(=>)"));
-        map.put(LexicalType.NE, Pattern.compile("^(<>)"));
+        sym_map.put(LexicalType.LE, Pattern.compile("^(<=)|(=<)"));
+        sym_map.put(LexicalType.GE, Pattern.compile("^(>=)|(=>)"));
+        sym_map.put(LexicalType.NE, Pattern.compile("^(<>)"));
 
-        map.put(LexicalType.LT, Pattern.compile("^(<)"));
-        map.put(LexicalType.GT, Pattern.compile("^(>)"));
+        sym_map.put(LexicalType.LT, Pattern.compile("^(<)"));
+        sym_map.put(LexicalType.GT, Pattern.compile("^(>)"));
 
-        map.put(LexicalType.EQ, Pattern.compile("^([=])"));
-        map.put(LexicalType.ADD, Pattern.compile("^([+])"));
-        map.put(LexicalType.SUB, Pattern.compile("^([\\-])"));
-        map.put(LexicalType.MUL, Pattern.compile("^([*])"));
-        map.put(LexicalType.DIV, Pattern.compile("^([/])"));
+        sym_map.put(LexicalType.EQ, Pattern.compile("^([=])"));
+        sym_map.put(LexicalType.ADD, Pattern.compile("^([+])"));
+        sym_map.put(LexicalType.SUB, Pattern.compile("^([\\-])"));
+        sym_map.put(LexicalType.MUL, Pattern.compile("^([*])"));
+        sym_map.put(LexicalType.DIV, Pattern.compile("^([/])"));
 
-        map.put(LexicalType.NAME, Pattern.compile("^([a-zA-Z]+([a-zA-z0-9]*))"));
-        map.put(LexicalType.LITERAL, Pattern.compile("^\"(.*)\""));
+        sym_map.put(LexicalType.LITERAL, Pattern.compile("^\"(.*)\""));
+
+
         //無視するパターン
-        Pattern p_ignore = Pattern.compile("^[ \t\r\n]+");
+        Pattern p_ignore = Pattern.compile("^([ \t\r\n]+)");
 
-        for (Map.Entry<LexicalType, Pattern> patternEntry : map.entrySet()) {
+        for (Map.Entry<String, Pattern> patternEntry : map_block.entrySet()) {
             Matcher matcher = patternEntry.getValue().matcher(code);
             Matcher m_ignore = p_ignore.matcher(code);
+
             if (matcher.find()) {
-                unit.add(matcher.group());
-                code = code.substring(matcher.end());
-                System.out.println(patternEntry.getKey());
-                return new LexicalUnit(patternEntry.getKey(), null);
+                //文字列の塊を切り出して、予約語と一致するか調べる
+                if(patternEntry.getKey().equals("STR_NUM")){
+                    for (Map.Entry<LexicalType, String> strPatternEntry : str_map.entrySet()) {
+                        if(matcher.group().equals(strPatternEntry.getValue())){
+                            code = code.substring(matcher.end());
+                            System.out.println(strPatternEntry.getKey() + ":" + matcher.group());
+                            return new LexicalUnit(strPatternEntry.getKey(), null);
+                        }
+                    }
+                    code = code.substring(matcher.end());
+                    System.out.println(patternEntry.getKey() + ":" + matcher.group());
+                    return new LexicalUnit(LexicalType.NAME, null);
+                }else if(patternEntry.getKey().equals("NUM")){
+                    for (Map.Entry<LexicalType, Pattern> numPatternEntry : num_map.entrySet()) {
+                        Matcher num_matcher = numPatternEntry.getValue().matcher(matcher.group());
+                        if(num_matcher.find()){
+                            code = code.substring(matcher.end());
+                            System.out.println(numPatternEntry.getKey() + ":" + matcher.group());
+                            return new LexicalUnit(numPatternEntry.getKey(), null);
+                        }
+                    }
+                    code = code.substring(matcher.end());
+                    return null;
+                }else if(patternEntry.getKey().equals("SYMBOL")){
+                    for (Map.Entry<LexicalType, Pattern> symPatternEntry : sym_map.entrySet()) {
+                        Matcher sym_matcher = symPatternEntry.getValue().matcher(matcher.group());
+                        if(sym_matcher.find()){
+                            code = code.substring(matcher.end());
+                            System.out.println(symPatternEntry.getKey() + ":" + matcher.group());
+                            return new LexicalUnit(symPatternEntry.getKey(), null);
+                        }
+                    }
+                    code = code.substring(matcher.end());
+                    return null;
+                }
+
             } else if (m_ignore.find()) {
                 code = code.substring(m_ignore.end());
             }

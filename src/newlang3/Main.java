@@ -5,10 +5,10 @@ public class Main {
         String fileName = "src/txt/BASIC";
         LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzerImpl(fileName);
         LexicalUnit lexicalUnit;
-        while(true){
+        while (true) {
             try {
                 lexicalUnit = lexicalAnalyzer.get();
-                if(lexicalUnit != null) {
+                if (lexicalUnit != null) {
                     if (lexicalUnit.getType() == LexicalType.EOF) break;
                 }
             } catch (Exception e) {
