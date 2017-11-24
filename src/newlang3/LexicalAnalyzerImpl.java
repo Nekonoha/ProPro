@@ -139,9 +139,9 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                         Matcher num_matcher = numPatternEntry.getValue().matcher(matcher.group());
                         if (num_matcher.find()) {
                             code = code.substring(matcher.end());
-                            if(numPatternEntry.getKey() == LexicalType.DOUBLEVAL){
+                            if (numPatternEntry.getKey() == LexicalType.DOUBLEVAL) {
                                 return new LexicalUnit(numPatternEntry.getKey(), new ValueImpl(Double.parseDouble(matcher.group())));
-                            }else if(numPatternEntry.getKey() == LexicalType.INTVAL){
+                            } else if (numPatternEntry.getKey() == LexicalType.INTVAL) {
                                 return new LexicalUnit(numPatternEntry.getKey(), new ValueImpl(Integer.parseInt(matcher.group())));
                             }
                         }
