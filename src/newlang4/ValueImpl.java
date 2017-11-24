@@ -3,10 +3,9 @@ package newlang4;
 import newlang4.Value;
 import newlang4.ValueType;
 
-public class ValueImpl implements Value {
+public class ValueImpl implements Value{
     ValueType valueType;
     String s;
-
 
     public ValueImpl(String s) {
         this.s = s;
@@ -18,12 +17,12 @@ public class ValueImpl implements Value {
         this.valueType = ValueType.INTEGER;
     }
 
-    public ValueImpl(double d) {
+    public ValueImpl(double d){
         this.s = String.valueOf(d);
         this.valueType = ValueType.DOUBLE;
     }
 
-    public ValueImpl(boolean b) {
+    public ValueImpl(boolean b){
         this.s = String.valueOf(b);
         this.valueType = ValueType.BOOL;
     }
