@@ -1,14 +1,10 @@
 package newlang4;
 
-import newlang3.LexicalAnalyzer;
-import newlang3.LexicalType;
-import newlang3.LexicalUnit;
-import newlang3.ValueImpl;
+import sun.security.krb5.internal.PAData;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,26 +39,6 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         }
     }
 
-    public LexicalAnalyzerImpl(InputStream in) {
-        try {
-            this.isr = new InputStreamReader(in);
-            this.pbr = new PushbackReader(isr);
-            //切り出し
-            while (true) {
-                int c = pbr.read();
-                if (c == -1) break;
-                code_s.append((char) c);
-            }
-
-            code = code_s.toString();
-
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 
     @Override
@@ -121,7 +97,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
 
         //無視するパターン
-        Pattern p_ignore = Pattern.compile("^([ \t\r\n])");
+        Pattern p_ignore = Pattern.compile("^([\\s])");
 
         for (Map.Entry<String, Pattern> patternEntry : map_block.entrySet()) {
             Matcher matcher = patternEntry.getValue().matcher(code);
@@ -158,7 +134,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                         if (sym_matcher.find()) {
                             if (symPatternEntry.getKey() == LexicalType.LITERAL) {
                                 code = code.substring(matcher.end());
-                                return new LexicalUnit(symPatternEntry.getKey(), new ValueImpl(matcher.group()));
+                                return new LexicalUnit(symPatternEntry.getKey(), new ValueImpl(matcher.group().replaceAll("\"", "")));
                             } else {
                                 code = code.substring(matcher.end());
                                 return new LexicalUnit(symPatternEntry.getKey(), null);

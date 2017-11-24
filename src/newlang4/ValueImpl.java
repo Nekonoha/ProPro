@@ -1,7 +1,7 @@
 package newlang4;
 
-import newlang3.Value;
-import newlang3.ValueType;
+import newlang4.Value;
+import newlang4.ValueType;
 
 public class ValueImpl implements Value {
     ValueType valueType;

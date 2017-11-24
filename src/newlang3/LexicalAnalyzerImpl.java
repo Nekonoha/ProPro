@@ -39,6 +39,28 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         }
     }
 
+    public LexicalAnalyzerImpl(FileInputStream fin){
+        try {
+            InputStream in = fin;
+            this.isr = new InputStreamReader(in);
+            this.pbr = new PushbackReader(isr);
+            //切り出し
+            while (true) {
+                int c = pbr.read();
+                if (c == -1) break;
+                code_s.append((char) c);
+            }
+
+            code = code_s.toString();
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public LexicalUnit get() throws Exception {
         //ほしいパターン
@@ -95,7 +117,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
 
         //無視するパターン
-        Pattern p_ignore = Pattern.compile("^([ \t\r\n])");
+        Pattern p_ignore = Pattern.compile("^([\\s])");
 
         for (Map.Entry<String, Pattern> patternEntry : map_block.entrySet()) {
             Matcher matcher = patternEntry.getValue().matcher(code);
@@ -132,7 +154,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                         if (sym_matcher.find()) {
                             if (symPatternEntry.getKey() == LexicalType.LITERAL) {
                                 code = code.substring(matcher.end());
-                                return new LexicalUnit(symPatternEntry.getKey(), new ValueImpl(matcher.group()));
+                                return new LexicalUnit(symPatternEntry.getKey(), new ValueImpl(matcher.group().replaceAll("\"", "")));
                             } else {
                                 code = code.substring(matcher.end());
                                 return new LexicalUnit(symPatternEntry.getKey(), null);
