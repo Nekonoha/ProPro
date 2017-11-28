@@ -130,7 +130,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                 } else if (patternEntry.getKey().equals("INTVAL")) {
                     return new LexicalUnit(LexicalType.INTVAL, new ValueImpl(Integer.parseInt(matcher.group())));
                 } else if (patternEntry.getKey().equals("LITERAL")) {
-                    return new LexicalUnit(LexicalType.LITERAL, new ValueImpl(matcher.group().replaceAll("\"", "")));
+                    return new LexicalUnit(LexicalType.LITERAL, new ValueImpl(matcher.group(1)));
                 } else if (patternEntry.getKey().equals("NL")) {
                     return new LexicalUnit(LexicalType.NL, null);
                 }
