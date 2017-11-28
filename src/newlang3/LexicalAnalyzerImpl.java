@@ -13,7 +13,6 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
     private String filename;
     private InputStreamReader isr;
     private PushbackReader pbr;
-    ArrayList<String> unit = new ArrayList<>();
     StringBuilder code_s = new StringBuilder();
     String code;
 
