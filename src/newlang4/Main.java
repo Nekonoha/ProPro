@@ -20,11 +20,11 @@ public class Main {
         env = new Environment(lex);
         first = lex.get();
 
-//        program = Program.isMatch(env, first);
-//        if (program != null && program.Parse()) {
-//            System.out.println(program);
-//            System.out.println("value = " + program.getValue());
-//        } else System.out.println("syntax error");
+        program = Program.isMatch(env, first);
+        if (program != null && program.Parse()) {
+            System.out.println(program);
+            System.out.println("value = " + program.getValue());
+        } else System.out.println("syntax error");
     }
 
 }
